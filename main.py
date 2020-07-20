@@ -11,7 +11,8 @@ MIN_SHIFT_LENGTH = 3
 
 MUTATION_RATE = 0.25
 POPULATION = 1000
-GENERATIONS = 50
+GENERATIONS = 1000
+NEGATIVE_PENALTY_FACTOR = 1.5
 
 
 def run():
@@ -131,7 +132,13 @@ def format_array(array):
 
 def rms(schedule):
     slot_sum = get_slot_sum(schedule)
-    square_diff = [(slot_sum[i] - TARGET[i])**2 for i in range(len(TARGET))]
+    square_diff = []
+    for i in range(len(TARGET)):
+        if slot_sum[i] < TARGET[i]:
+            square_diff.append((NEGATIVE_PENALTY_FACTOR * (slot_sum[i] - TARGET[i]))**2)
+        else:
+            square_diff.append((slot_sum[i] - TARGET[i])**2)
+    # square_diff = [(slot_sum[i] - TARGET[i])**2 for i in range(len(TARGET))]
 
     mean_square = sum(square_diff) / len(square_diff)
     return sqrt(mean_square)
