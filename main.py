@@ -1,8 +1,10 @@
-from random import randint
+from random import randint, choice, seed
 from math import sqrt
 import sys
+from datetime import datetime
 
-TARGET = [0, 0, 1, 2, 3, 5, 5, 5, 6, 3, 0]
+# TARGET = [0, 0, 1, 2, 3, 5, 5, 5, 6, 3, 0]
+TARGET = [0, 5, 10, 15, 15, 20, 15, 15, 10, 10, 25, 30, 20, 10, 20, 25, 10, 10, 0]
 
 MAX_SHIFT_LENGTH = 8
 MIN_SHIFT_LENGTH = 3
@@ -13,15 +15,27 @@ GENERATIONS = 50
 
 
 def run():
-    print('foo')
+    seed()
+    start = datetime.now()
     schedule = initialize()
     output_current(schedule)
     for i in range(GENERATIONS):
-        population = [copy_schedule(schedule) for x in range(POPULATION-1)]
+        population = [copy_schedule(schedule) for x in range(POPULATION)]
         mutate_population(population)
+        current_rms = rms(schedule)
 
-        schedule = get_best_schedule(population)
-        output_current(schedule)
+        new_schedule = get_best_schedule(population)
+        new_rms = rms(new_schedule)
+        if new_rms < current_rms:
+            schedule = new_schedule
+            print(f'Generation {i}')
+            output_current(schedule)
+
+    elapsed_seconds = (datetime.now() - start).seconds
+    print('-------------------------')
+    output_current(schedule)
+    print(f'Agents: {len(schedule)}')
+    print(f'Seconds elapsed: {elapsed_seconds}')
 
 
 def get_best_schedule(population):
@@ -46,9 +60,19 @@ def mutate_population(population):
 
 
 def mutate_schedule(schedule):
-    mutations = int(MUTATION_RATE*len(schedule))
+    mutations = max(1, int(MUTATION_RATE*len(schedule)))
     for i in range(mutations):
-        schedule[randint(0, len(schedule)-1)] = create_agent_shift()
+        mutation = choice(['update', 'add', 'remove'])
+        if mutation == 'update':
+            schedule[randint(0, len(schedule)-1)] = create_agent_shift()
+        elif mutation == 'add':
+            schedule.append(create_agent_shift())
+        elif mutation == 'remove':
+            del schedule[len(schedule)-1]
+
+
+def schedule_update(schedule, position, value):
+    schedule[position] = value
 
 
 def output_current(schedule):
@@ -65,6 +89,7 @@ def copy_schedule(schedule):
 
 def initialize():
     schedule = []
+    # agents = 1
     agents = max(TARGET)
     for i in range(agents):
         shift = create_agent_shift()
