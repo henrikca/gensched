@@ -3,16 +3,16 @@ from math import sqrt
 import sys
 from datetime import datetime
 
-TARGET = [0, 0, 1, 2, 3, 5, 5, 5, 6, 3, 1]
-# TARGET = [0, 5, 10, 15, 15, 20, 15, 15, 10, 10, 25, 30, 20, 10, 20, 25, 10,
-#           10, 0]
+# TARGET = [0, 0, 1, 2, 3, 5, 5, 5, 6, 3, 1]
+TARGET = [0, 5, 10, 15, 15, 20, 15, 15, 10, 10, 25, 30, 20, 10, 20, 25, 10,
+          10, 0]
 
 MAX_SHIFT_LENGTH = 8
 MIN_SHIFT_LENGTH = 3
 
 MUTATION_RATE = 0.25
 POPULATION = 100
-GENERATIONS = 1000
+GENERATIONS = 100
 NEGATIVE_PENALTY_FACTOR = 1
 
 
@@ -53,24 +53,16 @@ def get_best_schedule(population):
 
 
 def mutate_population(population):
-    is_first = True
+    mutations = max(1, int(MUTATION_RATE*len(population[0])))
     for schedule in population:
-        if is_first:
-            is_first = False
-        else:
-            mutate_schedule(schedule)
-
-
-def mutate_schedule(schedule):
-    mutations = max(1, int(MUTATION_RATE*len(schedule)))
-    for i in range(mutations):
-        mutation = choice(['update', 'add', 'remove'])
-        if mutation == 'update':
-            schedule[randint(0, len(schedule)-1)] = create_agent_shift()
-        elif mutation == 'add':
-            schedule.append(create_agent_shift())
-        elif mutation == 'remove':
-            del schedule[len(schedule)-1]
+        for i in range(mutations):
+            mutation = choice(['update', 'add', 'remove'])
+            if mutation == 'update':
+                schedule[randint(0, len(schedule)-1)] = create_agent_shift()
+            elif mutation == 'add':
+                schedule.append(create_agent_shift())
+            elif mutation == 'remove':
+                del schedule[len(schedule)-1]
 
 
 def schedule_update(schedule, position, value):
