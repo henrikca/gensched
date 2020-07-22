@@ -11,7 +11,7 @@ MAX_SHIFT_LENGTH = 8
 MIN_SHIFT_LENGTH = 3
 
 MUTATION_RATE = 0.25
-POPULATION = 100
+POPULATION = 1000
 GENERATIONS = 100
 NEGATIVE_PENALTY_FACTOR = 1
 
@@ -20,7 +20,7 @@ def run():
     seed()
     start = datetime.now()
     schedule = initialize()
-    output_current(schedule)
+    output(schedule)
     for i in range(GENERATIONS):
         population = [copy_schedule(schedule) for x in range(POPULATION)]
         mutate_population(population)
@@ -31,11 +31,13 @@ def run():
         if new_rms < current_rms:
             schedule = new_schedule
             print(f'Generation {i}')
-            output_current(schedule)
+            output(schedule)
+        if new_rms == 0:
+            break
 
     elapsed_seconds = (datetime.now() - start).seconds
     print('-------------------------')
-    output_current(schedule)
+    output(schedule)
     print(f'Agents: {len(schedule)}')
     print(f'Seconds elapsed: {elapsed_seconds}')
 
@@ -69,7 +71,7 @@ def schedule_update(schedule, position, value):
     schedule[position] = value
 
 
-def output_current(schedule):
+def output(schedule):
     print(get_schedule_as_string(schedule))
     print(format_array(get_slot_sum(schedule)))
     print(format_array(TARGET))
@@ -83,8 +85,9 @@ def copy_schedule(schedule):
 
 def initialize():
     schedule = []
-    agents = 1
-    # agents = max(TARGET)*2
+    # Approximating the number of needed agents to twice the number max
+    # concurrent agents. Would work with 0 too.
+    agents = max(TARGET)*2
     for i in range(agents):
         shift = create_agent_shift()
         schedule.append(shift)
@@ -113,7 +116,6 @@ def get_schedule_as_string(schedule):
     schedule_as_string = ''
     for i in range(len(schedule)):
         shift_string = format_array(schedule[i])
-        # shift_string = shift_format_string.format(*schedule[i])
         schedule_as_string += f'{shift_string}\n'
 
     return schedule_as_string
